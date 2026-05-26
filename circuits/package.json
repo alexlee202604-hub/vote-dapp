@@ -1,0 +1,11 @@
+{
+  "name": "vote-circuits",
+  "version": "1.0.0",
+  "scripts": {
+    "compile:membership": "circom membership.circom --r1cs --wasm --sym -o build",
+    "compile:vote": "circom anonymous_vote.circom --r1cs --wasm --sym -o build"
+  },
+  "dependencies": {
+    "circomlib": "^2.0.5"
+  }
+}

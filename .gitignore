@@ -1,0 +1,21 @@
+node_modules/
+.next/
+.env
+.env.local
+out/
+
+# Foundry
+contracts/out/
+contracts/cache/
+
+# Circuits
+circuits/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
