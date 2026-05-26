@@ -9,9 +9,7 @@ import "../src/Verifier.sol";
 
 contract Deploy is Script {
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
         
         // Deploy DAOToken
         DAOToken daoToken = new DAOToken();

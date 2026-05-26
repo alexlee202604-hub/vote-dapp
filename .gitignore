@@ -20,3 +20,4 @@ circuits/build/
 .DS_Store
 Thumbs.db
 .stitch/
+.vercel
