@@ -12,6 +12,7 @@ import { useAccount } from "wagmi";
 import { useCampaignCount, useProposalCount, useAllCampaigns, useAllProposals } from "@/hooks";
 import { useCurrentTimestamp } from "@/lib/useCurrentTimestamp";
 import { formatEther } from "viem";
+import { getMockCampaigns, getMockProposals, MOCK_VOTER_COUNT } from "@/lib/mock-data";
 
 function StatSkeleton() {
   return (
@@ -69,13 +70,28 @@ export default function HomePage() {
   const pT = useTranslations("proposals");
   const commonT = useTranslations("common");
   const { isConnected } = useAccount();
-  const voterCount = isConnected ? "1" : "-";
+  const voterCount = MOCK_VOTER_COUNT;
   const now = useCurrentTimestamp();
 
-  const { data: campaignCount, isLoading: countLoading } = useCampaignCount();
-  const { data: proposalCount, isLoading: proposalCountLoading } = useProposalCount();
-  const { data: campaigns, isLoading: campaignsLoading } = useAllCampaigns(3);
-  const { data: proposals, isLoading: proposalsLoading } = useAllProposals(4);
+  const useMockData = !isConnected;
+  const mockCamps = useMockData ? getMockCampaigns(3) : null;
+  const mockProps = useMockData ? getMockProposals(4) : null;
+
+  const realCount = useCampaignCount();
+  const realProposalCount = useProposalCount();
+  const realCampaigns = useAllCampaigns(3);
+  const realProposals = useAllProposals(4);
+
+  const campaignCount = useMockData ? BigInt(mockCamps!.count) : realCount.data;
+  const proposalCount = useMockData ? BigInt(mockProps!.count) : realProposalCount.data;
+  const countLoading = useMockData ? false : realCount.isLoading;
+  const proposalCountLoading = useMockData ? false : realProposalCount.isLoading;
+
+  const campaigns = useMockData ? mockCamps!.data : realCampaigns.data;
+  const campaignsLoading = useMockData ? false : realCampaigns.isLoading;
+
+  const proposals = useMockData ? mockProps!.data : realProposals.data;
+  const proposalsLoading = useMockData ? false : realProposals.isLoading;
 
   const features = [
     {
