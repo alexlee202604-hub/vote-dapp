@@ -19,4 +19,3 @@ template Membership() {
     commitment <== poseidon.out;
 }
 
-component main = Membership();

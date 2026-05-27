@@ -53,12 +53,12 @@ contract ZKVoting {
     }
 
     /// @notice Cast an anonymous vote using a Groth16 ZK proof
-    /// @dev pubSignals layout: [nullifier, voteHash, proposalId, _reserved]
+    /// @dev pubSignals layout: [nullifier, voteHash, proposalId]
     function vote(
         uint[2] calldata pA,
         uint[2][2] calldata pB,
         uint[2] calldata pC,
-        uint[4] calldata pubSignals
+        uint[3] calldata pubSignals
     ) external {
         uint256 nullifier = pubSignals[0];
         uint256 voteHash = pubSignals[1];

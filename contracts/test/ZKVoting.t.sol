@@ -56,7 +56,7 @@ contract ZKVotingTest is Test {
 
     function test_VoteRevertNonExistentProposal() public {
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(12345), 0, 999, 0];
+        uint[3] memory pubSignals = [uint(12345), 0, 999];
         
         vm.expectRevert(ZKVoting.ProposalNotFound.selector);
         voting.vote(pA, pB, pC, pubSignals);
@@ -69,7 +69,7 @@ contract ZKVotingTest is Test {
         vm.warp(block.timestamp + 1 days + 1);
         
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(12345), 0, id, 0];
+        uint[3] memory pubSignals = [uint(12345), 0, id];
         
         vm.expectRevert(ZKVoting.VotingEnded.selector);
         voting.vote(pA, pB, pC, pubSignals);
@@ -80,7 +80,7 @@ contract ZKVotingTest is Test {
         uint256 id = voting.createProposal("Test", 7 days);
         
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(12345), 0, id, 0];
+        uint[3] memory pubSignals = [uint(12345), 0, id];
         
         // Mark nullifier as used
         vm.store(address(voting), keccak256(abi.encode(uint256(12345), uint256(2))), bytes32(uint256(1)));
@@ -124,7 +124,7 @@ contract ZKVotingTest is Test {
         uint256 id = voting.createProposal("Test", 7 days);
         
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(42), 0, id, 0];
+        uint[3] memory pubSignals = [uint(42), 0, id];
         
         // Should revert with InvalidProof since pA,pB,pC are all zeros
         vm.expectRevert(ZKVoting.InvalidProof.selector);
