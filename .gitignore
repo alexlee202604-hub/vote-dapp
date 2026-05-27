@@ -21,3 +21,17 @@ circuits/build/
 Thumbs.db
 .stitch/
 .vercel
+
+# Agent / AI workspace
+.omo/
+.agents/
+.graphify/
+.opencode/
+AGENTS.md
+skills-lock.json
+
+# Generated artifacts
+code-structure.html
+server.log
+/tsconfig.json
+/src/
