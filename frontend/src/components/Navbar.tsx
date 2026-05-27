@@ -1,122 +1,165 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useState } from "react";
-
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/campaigns", label: "Campaigns" },
-  { href: "/proposals", label: "Proposals" },
-];
+import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import ThemeToggle from "@/components/ThemeToggle";
+import LocaleSwitcher from "@/components/LocaleSwitcher";
+import { Menu, X, Vote } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function Navbar() {
+  const t = useTranslations("nav");
+  const locale = useLocale();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 0);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const navLinks = [
+    { href: "/", label: t("home") },
+    { href: "/campaigns", label: t("campaigns") },
+    { href: "/proposals", label: t("proposals") },
+  ];
+
+  const cleanPath = pathname.replace(`/${locale}`, "") || "/";
+
+  const isActive = (href: string) => {
+    if (href === "/") return cleanPath === "/";
+    return cleanPath.startsWith(href);
+  };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-black/80">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-300",
+        scrolled
+          ? "border-b border-border bg-background/80 backdrop-blur-xl shadow-xs"
+          : "bg-background/50 backdrop-blur-md"
+      )}
+    >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         {/* Brand */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg font-bold tracking-tight text-zinc-900 dark:text-white"
+          className="flex items-center gap-2.5 group"
         >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 28 28"
-            fill="none"
-            aria-hidden="true"
-          >
-            <rect width="28" height="28" rx="8" fill="#6366f1" />
-            <path
-              d="M14 6l6 6h-4v6h-4v-6H8l6-6z"
-              fill="white"
-              stroke="white"
-              strokeWidth="1"
-            />
-          </svg>
-          VoteDAO
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary transition-transform group-hover:scale-105">
+            <Vote className="size-4 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold tracking-tight text-foreground">
+            VoteDAO
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => {
-            const isActive =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
+            const active = isActive(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white"
-                }`}
+                className={cn(
+                  "relative rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                  active
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
               >
                 {link.label}
+                {active && (
+                  <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" />
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block">
+        {/* Desktop Right */}
+        <div className="hidden md:flex items-center gap-1.5">
+          <ThemeToggle />
+          <LocaleSwitcher />
+          <div className="ml-1">
             <ConnectButton />
           </div>
+        </div>
 
-          {/* Mobile hamburger */}
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-900"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+        {/* Mobile header right */}
+        <div className="flex md:hidden items-center gap-1">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
           >
-            {mobileOpen ? (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+            <Menu className="size-5" />
+          </Button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Overlay */}
       {mobileOpen && (
-        <div className="border-t border-zinc-200 px-4 pb-4 pt-2 md:hidden dark:border-zinc-800">
-          <nav className="flex flex-col gap-1">
-            {navLinks.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
-                      : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="mt-3 sm:hidden">
-            <ConnectButton />
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="absolute right-0 top-0 flex h-full w-72 max-w-[80vw] flex-col border-l border-border bg-background shadow-2xl animate-in slide-in-from-right">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <span className="text-sm font-semibold text-muted-foreground">
+                Menu
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+            <nav className="flex-1 space-y-1 px-3 py-4">
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="border-t border-border p-4 flex flex-col gap-3">
+              <LocaleSwitcher />
+              <ConnectButton />
+            </div>
           </div>
         </div>
       )}
