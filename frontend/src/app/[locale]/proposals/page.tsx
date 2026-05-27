@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Link } from "@/i18n/navigation";
@@ -25,13 +25,15 @@ type Proposal = {
 function ProposalCard({ proposal }: { proposal: Proposal }) {
   const t = useTranslations("proposals");
   const commonT = useTranslations("common");
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
   const now = useCurrentTimestamp();
-  const isActive = proposal.deadline > now;
+  const isActive = hydrated && proposal.deadline > now;
   const totalVotes = proposal.yesVotes + proposal.noVotes;
   const yesPct = totalVotes > 0n ? Number((proposal.yesVotes * 10000n) / totalVotes) / 100 : 0;
   const noPct = totalVotes > 0n ? Number((proposal.noVotes * 10000n) / totalVotes) / 100 : 0;
   const passed = proposal.yesVotes >= proposal.noVotes;
-  const daysLeft = Number(proposal.deadline - now) / 86400;
+  const daysLeft = hydrated ? Number(proposal.deadline - now) / 86400 : 0;
 
   return (
     <Link href={`/proposals/${proposal.id.toString()}`}>
