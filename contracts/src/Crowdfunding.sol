@@ -11,6 +11,7 @@ enum CampaignStatus { Active, Success, Failed, Claimed }
 struct Campaign {
     uint256 id;
     address creator;
+    string name;
     address token;    // address(0) for ETH, ERC20 address otherwise
     uint256 target;
     uint256 deadline;
@@ -45,18 +46,19 @@ contract Crowdfunding is ReentrancyGuard {
     error TransferFailed();
 
     // Events
-    event CampaignCreated(uint256 indexed id, address indexed creator, address token, uint256 target, uint256 deadline);
+    event CampaignCreated(uint256 indexed id, address indexed creator, string name, address token, uint256 target, uint256 deadline);
     event ContributionMade(uint256 indexed campaignId, address indexed contributor, uint256 amount);
     event FundsWithdrawn(uint256 indexed campaignId, address indexed creator, uint256 amount);
     event RefundIssued(uint256 indexed campaignId, address indexed contributor, uint256 amount);
     event CampaignStatusUpdated(uint256 indexed campaignId, CampaignStatus status);
 
     /// @notice Create a new crowdfunding campaign
+    /// @param name Campaign name
     /// @param token Token address (address(0) for ETH)
     /// @param target Target amount in wei
     /// @param duration Duration in seconds
     /// @return campaignId The ID of the created campaign
-    function createCampaign(address token, uint256 target, uint256 duration) external returns (uint256) {
+    function createCampaign(string calldata name, address token, uint256 target, uint256 duration) external returns (uint256) {
         if (target == 0) revert TargetMustBePositive();
         if (duration < 1 days) revert DeadlineTooShort();
         
@@ -66,6 +68,7 @@ contract Crowdfunding is ReentrancyGuard {
         campaigns[id] = Campaign({
             id: id,
             creator: msg.sender,
+            name: name,
             token: token,
             target: target,
             deadline: block.timestamp + duration,
@@ -73,7 +76,7 @@ contract Crowdfunding is ReentrancyGuard {
             status: CampaignStatus.Active
         });
         
-        emit CampaignCreated(id, msg.sender, token, target, block.timestamp + duration);
+        emit CampaignCreated(id, msg.sender, name, token, target, block.timestamp + duration);
         return id;
     }
 

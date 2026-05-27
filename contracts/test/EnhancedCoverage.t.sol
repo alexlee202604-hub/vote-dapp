@@ -28,7 +28,7 @@ contract EnhancedCoverageTest is Test {
     uint256 constant TARGET = 10 ether;
     uint256 constant DURATION = 7 days;
 
-    event CampaignCreated(uint256 indexed id, address indexed creator, address token, uint256 target, uint256 deadline);
+    event CampaignCreated(uint256 indexed id, address indexed creator, string name, address token, uint256 target, uint256 deadline);
     event ContributionMade(uint256 indexed campaignId, address indexed contributor, uint256 amount);
     event FundsWithdrawn(uint256 indexed campaignId, address indexed creator, uint256 amount);
     event RefundIssued(uint256 indexed campaignId, address indexed contributor, uint256 amount);
@@ -57,7 +57,7 @@ contract EnhancedCoverageTest is Test {
 
     function test_ERC20Contribute() public {
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(token), TARGET, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(token), TARGET, DURATION);
 
         vm.prank(bob);
         token.approve(address(crowdfunding), 1 ether);
@@ -75,7 +75,7 @@ contract EnhancedCoverageTest is Test {
 
     function test_ERC20ContributeReachTarget() public {
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(token), 1 ether, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(token), 1 ether, DURATION);
 
         vm.prank(bob);
         token.approve(address(crowdfunding), 1 ether);
@@ -89,7 +89,7 @@ contract EnhancedCoverageTest is Test {
 
     function test_ERC20ContributeRevertZeroAmount() public {
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(token), TARGET, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(token), TARGET, DURATION);
 
         vm.prank(bob);
         vm.expectRevert(Crowdfunding.ContributionMustBePositive.selector);
@@ -98,7 +98,7 @@ contract EnhancedCoverageTest is Test {
 
     function test_ERC20ContributeAndWithdraw() public {
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(token), 1 ether, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(token), 1 ether, DURATION);
 
         // Bob has tokens from setUp - approve and contribute
         vm.startPrank(bob);
@@ -120,7 +120,7 @@ contract EnhancedCoverageTest is Test {
 
     function test_ERC20RefundFailedCampaign() public {
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(token), 100 ether, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(token), 100 ether, DURATION);
 
         vm.startPrank(bob);
         token.approve(address(crowdfunding), 2 ether);
@@ -142,7 +142,7 @@ contract EnhancedCoverageTest is Test {
     function test_UpdateStatusNoChangeWhenAlreadySuccess() public {
         // When status is already Success, _updateStatus should not change it
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(0), 1 ether, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(0), 1 ether, DURATION);
         vm.prank(bob);
         crowdfunding.contribute{value: 1 ether}(id, 0);
 
@@ -159,7 +159,7 @@ contract EnhancedCoverageTest is Test {
     function test_UpdateStatusNoChangeBeforeDeadline() public {
         // When deadline hasn't passed, _updateStatus should not change status
         vm.prank(alice);
-        uint256 id = crowdfunding.createCampaign(address(0), TARGET, DURATION);
+        uint256 id = crowdfunding.createCampaign("Test", address(0), TARGET, DURATION);
 
         vm.prank(bob);
         crowdfunding.contribute{value: 1 ether}(id, 0);
@@ -189,7 +189,7 @@ contract EnhancedCoverageTest is Test {
         uint256 id = voting.createProposal("Test", 7 days);
 
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(12345), 0, id, 0]; // voteHash=0 → even → yes vote
+        uint[3] memory pubSignals = [uint(12345), 0, id]; // voteHash=0 → even → yes vote
 
         vm.expectEmit(true, true, false, false);
         emit VoteCast(12345, 0);
@@ -206,7 +206,7 @@ contract EnhancedCoverageTest is Test {
         uint256 id = voting.createProposal("Test", 7 days);
 
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(99999), 1, id, 0]; // voteHash=1 → odd → no vote
+        uint[3] memory pubSignals = [uint(99999), 1, id]; // voteHash=1 → odd → no vote
 
         vm.expectEmit(true, true, false, false);
         emit VoteCast(99999, 1);
@@ -226,7 +226,7 @@ contract EnhancedCoverageTest is Test {
         uint256 id = voting.createProposal("Fuzz Vote", 7 days);
 
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
-        uint[4] memory pubSignals = [uint(nullifier), uint(voteHash), id, 0];
+        uint[3] memory pubSignals = [uint(nullifier), uint(voteHash), id];
 
         voting.vote(pA, pB, pC, pubSignals);
 
@@ -247,9 +247,9 @@ contract EnhancedCoverageTest is Test {
 
         (uint[2] memory pA, uint[2][2] memory pB, uint[2] memory pC) = _emptyProof();
 
-        voting.vote(pA, pB, pC, [uint(1), 0, id1, 0]);
-        voting.vote(pA, pB, pC, [uint(2), 1, id1, 0]);
-        voting.vote(pA, pB, pC, [uint(3), 0, id2, 0]);
+        voting.vote(pA, pB, pC, [uint(1), 0, id1]);
+        voting.vote(pA, pB, pC, [uint(2), 1, id1]);
+        voting.vote(pA, pB, pC, [uint(3), 0, id2]);
 
         Proposal memory p1 = voting.getProposal(id1);
         assertEq(p1.yesVotes, 1);
