@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Loader2, AlertCircle, ArrowLeft, Wallet, Clock, Shield, CheckCircle2,
-  EyeOff, ThumbsUp, ThumbsDown, Minus,
+  EyeOff, ThumbsUp, ThumbsDown,
 } from "lucide-react";
 import { groth16 } from "snarkjs";
 import { keccak256, toBytes } from "viem";
@@ -34,7 +34,7 @@ type ProposalData = {
   noVotes: bigint;
 };
 
-type VoteChoice = 0 | 1 | 2;
+type VoteChoice = 0 | 1;
 
 export default function ProposalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -133,11 +133,7 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
   };
 
   const voteLabel = (choice: VoteChoice): string => {
-    switch (choice) {
-      case 0: return t("voteFor");
-      case 1: return t("voteAgainst");
-      case 2: return t("voteAbstain");
-    }
+    return choice === 0 ? t("voteFor") : t("voteAgainst");
   };
 
   if (isLoading) {
@@ -321,7 +317,7 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
                     <Shield className="h-3 w-3" />
                     {t("poweredByZK")}
                   </p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button
                       variant="outline"
                       className="h-auto py-4 flex-col gap-1.5 border-success/30 hover:border-success hover:bg-success/5 transition-all"
@@ -337,14 +333,6 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
                     >
                       <ThumbsDown className="h-5 w-5 text-destructive" />
                       <span className="text-xs font-medium">{t("voteAgainst")}</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="h-auto py-4 flex-col gap-1.5 border-muted-foreground/30 hover:border-muted-foreground hover:bg-muted/50 transition-all"
-                      onClick={() => openVoteDialog(2)}
-                    >
-                      <Minus className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-xs font-medium">{t("voteAbstain")}</span>
                     </Button>
                   </div>
                 </>
