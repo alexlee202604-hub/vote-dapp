@@ -2,10 +2,12 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { wagmiConfig } from '@/config/wagmi';
 import '@rainbow-me/rainbowkit/styles.css';
 import { useState, type ReactNode } from 'react';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { Toaster } from '@/components/ui/sonner';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -13,14 +15,15 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={lightTheme({
-          accentColor: '#7c3aed',
-          accentColorForeground: 'white',
-          borderRadius: 'medium',
-          fontStack: 'system',
-        })}>
-          {children}
-        </RainbowKitProvider>
+        <ThemeProvider>
+          <RainbowKitProvider
+            appInfo={{ appName: 'VoteDAO' }}
+            modalSize="compact"
+          >
+            {children}
+          </RainbowKitProvider>
+          <Toaster />
+        </ThemeProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
