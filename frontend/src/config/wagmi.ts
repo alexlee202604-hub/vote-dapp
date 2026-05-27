@@ -8,6 +8,7 @@ export const wagmiConfig = createConfig({
     metaMask(),
     coinbaseWallet({ appName: 'VoteDAO' }),
   ],
+  ssr: true,
   transports: {
     [sepolia.id]: http(
       process.env.NEXT_PUBLIC_RPC_URL || 'https://ethereum-sepolia.publicnode.com',
