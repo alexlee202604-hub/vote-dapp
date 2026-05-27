@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -89,8 +89,13 @@ export default function CampaignDetailPage() {
   const { handleTx: handleWithdrawTx } = useTransaction();
   const { handleTx: handleRefundTx } = useTransaction();
 
-  const [contributeAmount, setContributeAmount] = useState("");
-  const [actionError, setActionError] = useState<string | null>(null);
+const [contributeAmount, setContributeAmount] = useState("");
+const [actionError, setActionError] = useState<string | null>(null);
+const [hydrated, setHydrated] = useState(false);
+
+useEffect(() => {
+  setHydrated(true);
+}, []);
 
   const userContribution = userContribData as bigint | undefined;
   const hasContributed = userContribution !== undefined && userContribution > 0n;
@@ -173,7 +178,7 @@ const c = campaign as {
   const daysLeft = Number(
     (c.deadline - now) / 86400n,
   );
-  const deadlinePassed = c.deadline <= now;
+  const deadlinePassed = hydrated ? c.deadline <= now : false;
 
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,13 +191,13 @@ const c = campaign as {
     }
 
     try {
-      await handleContributeTx(contributeAsync, {
+      await handleContributeTx(contributeAsync({
         address: CONTRACT_ADDRESSES.crowdfunding,
         abi: CROWDFUNDING_ABI,
         functionName: "contribute",
         args: [c.id, parseEther(contributeAmount)],
         value: parseEther(contributeAmount),
-      });
+      }));
       toast.success(t("contributeSuccess"));
       setContributeAmount("");
       refetchCampaign();
@@ -205,12 +210,12 @@ const c = campaign as {
   const handleWithdraw = async () => {
     setActionError(null);
     try {
-      await handleWithdrawTx(withdrawAsync, {
+      await handleWithdrawTx(withdrawAsync({
         address: CONTRACT_ADDRESSES.crowdfunding,
         abi: CROWDFUNDING_ABI,
         functionName: "withdraw",
         args: [c.id],
-      });
+      }));
       toast.success(t("withdrawSuccess"));
       refetchCampaign();
     } catch {
@@ -221,12 +226,12 @@ const c = campaign as {
   const handleRefund = async () => {
     setActionError(null);
     try {
-      await handleRefundTx(refundAsync, {
+      await handleRefundTx(refundAsync({
         address: CONTRACT_ADDRESSES.crowdfunding,
         abi: CROWDFUNDING_ABI,
         functionName: "refund",
         args: [c.id],
-      });
+      }));
       toast.success(t("refundSuccess"));
       refetchCampaign();
       refetchContribution();

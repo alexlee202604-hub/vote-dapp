@@ -106,13 +106,13 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
 
       setProofState("submitting");
 
-       await handleTx(castVoteAsync, {
+       await handleTx(castVoteAsync({
          address: CONTRACT_ADDRESSES.zkVoting,
-         abi: ZKVOTING_ABI as unknown as unknown[],
+         abi: ZKVOTING_ABI,
          functionName: "vote",
          args: [pA, pB, pC, pubSignals],
          gas: 500000n,
-       });
+       }));
 
       setProofState("done");
       toast.success(t("voteSuccess"));

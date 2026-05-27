@@ -9,16 +9,13 @@ export function useTransaction() {
   const [txHash, setTxHash] = useState<Address | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const handleTx = async <T extends Record<string, unknown>>(
-    writeFn: (args: T) => Promise<Address>,
-    args: T
-  ) => {
+  const handleTx = async (txPromise: Promise<Address>) => {
     setState("pending");
     setError(null);
     setTxHash(null);
 
     try {
-      const hash = await writeFn(args);
+      const hash = await txPromise;
       setTxHash(hash);
       setState("confirmed");
       toast.success("Transaction confirmed", {
