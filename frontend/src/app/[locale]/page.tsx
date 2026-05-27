@@ -96,8 +96,8 @@ export default function HomePage() {
   const features = [
     {
       icon: Coins,
-      title: "Crowdfunding",
-      desc: "Create token-gated fundraising campaigns with target goals and deadlines.",
+      titleKey: "featureCrowdfunding",
+      descKey: "featureCrowdfundingDesc",
       href: "/campaigns",
       gradient: "from-purple-500/20 to-purple-600/5",
       iconBg: "bg-purple-500/10",
@@ -105,8 +105,8 @@ export default function HomePage() {
     },
     {
       icon: Shield,
-      title: "ZK Voting",
-      desc: "Vote anonymously on proposals using Groth16 zero-knowledge proofs.",
+      titleKey: "featureZkVoting",
+      descKey: "featureZkVotingDesc",
       href: "/proposals",
       gradient: "from-indigo-500/20 to-indigo-600/5",
       iconBg: "bg-indigo-500/10",
@@ -114,8 +114,8 @@ export default function HomePage() {
     },
     {
       icon: Vote,
-      title: "DAO Governance",
-      desc: "Participate in decentralized decision-making with $VOTE tokens.",
+      titleKey: "featureDaoGovernance",
+      descKey: "featureDaoGovernanceDesc",
       href: "/proposals",
       gradient: "from-emerald-500/20 to-emerald-600/5",
       iconBg: "bg-emerald-500/10",
@@ -457,7 +457,7 @@ export default function HomePage() {
             {features.map((f) => {
               const Icon = f.icon;
               return (
-                <Link key={f.title} href={f.href}>
+                <Link key={f.titleKey} href={f.href}>
                   <Card className="group relative h-full overflow-hidden transition hover:shadow-md hover:border-primary/30">
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${f.gradient} opacity-50`}
@@ -468,8 +468,8 @@ export default function HomePage() {
                       >
                         <Icon className={`h-5 w-5 ${f.iconColor}`} />
                       </div>
-                      <CardTitle className="text-base">{f.title}</CardTitle>
-                      <CardDescription>{f.desc}</CardDescription>
+                      <CardTitle className="text-base">{t(f.titleKey)}</CardTitle>
+                      <CardDescription>{t(f.descKey)}</CardDescription>
                     </CardHeader>
                     <CardContent className="relative">
                       <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
