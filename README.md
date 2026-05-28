@@ -46,7 +46,7 @@
 | 合约 | 地址 |
 |------|------|
 | **DAOToken** (VOTE) | `0x068bf8e43d9a5a6477f9837e7bf0070a6ec2e9d6` |
-| **Crowdfunding** | `0x61d3a8b465933eadaaed39f7f47cc56fbe179171` |
+| **Crowdfunding** | `0xdE27f6e3DbC8a53f74DFa1FB93b9d9ACe1b3D5d3` |
 | **Groth16Verifier** | `0x50fe6de34ea1865fc86df13a8aa5d0c5d2b6b03d` |
 | **ZKVoting** | `0xa54e2abf868bf66c2f7d13509e5f96ae3766c148` |
 

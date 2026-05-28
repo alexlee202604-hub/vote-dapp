@@ -36,7 +36,7 @@ contract CrowdfundingTest is Test {
 
     function test_CreateCampaignEmitsEvent() public {
         vm.prank(alice);
-        vm.expectEmit(true, true, true, true, true, true);
+        vm.expectEmit(true, true, true, true);
         emit CampaignCreated(1, alice, "Test Campaign", address(0), TARGET, block.timestamp + DURATION);
         crowdfunding.createCampaign("Test Campaign", address(0), TARGET, DURATION);
     }

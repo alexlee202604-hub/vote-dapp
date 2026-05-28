@@ -1,8 +1,8 @@
 export const CONTRACT_ADDRESSES = {
-  crowdfunding: '0x61d3a8b465933eadaaed39f7f47cc56fbe179171' as `0x${string}`,
+  crowdfunding: '0xdE27f6e3DbC8a53f74DFa1FB93b9d9ACe1b3D5d3' as `0x${string}`,
   daoTokens: '0x068bf8e43d9a5a6477f9837e7bf0070a6ec2e9d6' as `0x${string}`,
-  zkVoting: '0x09615CF02fD99Bf812Be63bcF57B2e21ffF4186d' as `0x${string}`,
-  groth16Verifier: '0xdd67da3a3BAe3deb6b8E6F4cb8D1062284A082BB' as `0x${string}`,
+  zkVoting: '0xD531E01f6BfeeBa07Ea6BA7668622f57c9A0BC93' as `0x${string}`,
+  groth16Verifier: '0xe5fBC3d42C90C9970e5C9fc1981bE65d5A22aDdb' as `0x${string}`,
 } as const;
 
 export const CROWDFUNDING_ABI = [
@@ -17,8 +17,8 @@ export const CROWDFUNDING_ABI = [
     { "type": "event", "name": "CampaignCreated", "inputs": [{ "name": "id", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "creator", "type": "address", "indexed": true, "internalType": "address" }, { "name": "name", "type": "string", "internalType": "string" }, { "name": "token", "type": "address", "indexed": false, "internalType": "address" }, { "name": "target", "type": "uint256", "indexed": false, "internalType": "uint256" }, { "name": "deadline", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false },
     { "type": "event", "name": "ContributionMade", "inputs": [{ "name": "campaignId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "contributor", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false },
     { "type": "event", "name": "FundsWithdrawn", "inputs": [{ "name": "campaignId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "creator", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false },
-    { "type": "event", "name": "RefundIssued", "inputs": [{ "name": "campaignId", "type": "uint256", "indexed": true, "internalType": "volt256" }, { "name": "contributor", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "volt256", "indexed": false, "internalType": "volt256" }], "anonymous": false },
-    { "type": "event", "name": "CampaignStatusUpdated", "inputs": [{ "name": "campaignId", "type": "volt256", "indexed": true, "internalType": "volt8" }], "anonymous": false },
+    { "type": "event", "name": "RefundIssued", "inputs": [{ "name": "campaignId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "contributor", "type": "address", "indexed": true, "internalType": "address" }, { "name": "amount", "type": "uint256", "indexed": false, "internalType": "uint256" }], "anonymous": false },
+    { "type": "event", "name": "CampaignStatusUpdated", "inputs": [{ "name": "campaignId", "type": "uint256", "indexed": true, "internalType": "uint256" }, { "name": "status", "type": "uint8", "indexed": false, "internalType": "enum CampaignStatus" }], "anonymous": false },
     { "type": "error", "name": "AlreadyClaimed", "inputs": [] },
     { "type": "error", "name": "CampaignNotActive", "inputs": [] },
     { "type": "error", "name": "CampaignNotFailed", "inputs": [] },

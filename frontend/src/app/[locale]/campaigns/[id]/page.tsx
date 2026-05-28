@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useAccount } from "wagmi";
-import { formatEther, parseEther } from "viem";
-import { CONTRACT_ADDRESSES, CROWDFUNDING_ABI } from "@/config/contracts";
+import { useAccount, useReadContract } from "wagmi";
+import { formatEther, parseEther, zeroAddress } from "viem";
+import { CONTRACT_ADDRESSES, CROWDFUNDING_ABI, DAOTOKEN_ABI } from "@/config/contracts";
+import { useApproveToken } from "@/hooks";
 import { useCurrentTimestamp } from "@/lib/useCurrentTimestamp";
 import {
   useCampaign,
@@ -89,9 +90,23 @@ export default function CampaignDetailPage() {
   const { handleTx: handleWithdrawTx } = useTransaction();
   const { handleTx: handleRefundTx } = useTransaction();
 
+  const rawCampaign = campaign as { token: `0x${string}` } | undefined;
+  const isTokenCampaign = !!rawCampaign?.token && rawCampaign.token !== zeroAddress;
+
+  const { data: tokenAllowance, refetch: refetchAllowance } = useReadContract({
+    address: CONTRACT_ADDRESSES.daoTokens,
+    abi: DAOTOKEN_ABI,
+    functionName: "allowance",
+    args: address && isTokenCampaign ? [address, CONTRACT_ADDRESSES.crowdfunding] : undefined,
+    query: { enabled: !!address && !!isTokenCampaign },
+  });
+
+  const { writeContractAsync: approveAsync, isPending: isApproving } = useApproveToken();
+
 const [contributeAmount, setContributeAmount] = useState("");
 const [actionError, setActionError] = useState<string | null>(null);
 const [hydrated, setHydrated] = useState(false);
+const [isApproveTxPending, setIsApproveTxPending] = useState(false);
 
 useEffect(() => {
   setHydrated(true);
@@ -180,6 +195,37 @@ const c = campaign as {
   );
   const deadlinePassed = hydrated ? c.deadline <= now : false;
 
+  const needsApproval = (() => {
+    if (!isTokenCampaign || !tokenAllowance || !contributeAmount) return false;
+    try {
+      const amountWei = parseEther(contributeAmount);
+      return tokenAllowance < amountWei;
+    } catch {
+      return false;
+    }
+  })();
+
+  const handleApprove = async () => {
+    if (!contributeAmount) return;
+    setActionError(null);
+    setIsApproveTxPending(true);
+    try {
+      const amountWei = parseEther(contributeAmount);
+      await handleContributeTx(approveAsync({
+        address: CONTRACT_ADDRESSES.daoTokens,
+        abi: DAOTOKEN_ABI,
+        functionName: "approve",
+        args: [CONTRACT_ADDRESSES.crowdfunding, amountWei],
+      }));
+      toast.success("Token approved! You can now contribute.");
+      refetchAllowance();
+    } catch {
+      setActionError("Token approval failed");
+    } finally {
+      setIsApproveTxPending(false);
+    }
+  };
+
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionError(null);
@@ -191,13 +237,23 @@ const c = campaign as {
     }
 
     try {
-      await handleContributeTx(contributeAsync({
-        address: CONTRACT_ADDRESSES.crowdfunding,
-        abi: CROWDFUNDING_ABI,
-        functionName: "contribute",
-        args: [c.id, parseEther(contributeAmount)],
-        value: parseEther(contributeAmount),
-      }));
+      const amountWei = parseEther(contributeAmount);
+      if (isTokenCampaign) {
+        await handleContributeTx(contributeAsync({
+          address: CONTRACT_ADDRESSES.crowdfunding,
+          abi: CROWDFUNDING_ABI,
+          functionName: "contribute",
+          args: [c.id, amountWei],
+        }));
+      } else {
+        await handleContributeTx(contributeAsync({
+          address: CONTRACT_ADDRESSES.crowdfunding,
+          abi: CROWDFUNDING_ABI,
+          functionName: "contribute",
+          args: [c.id, 0n],
+          value: amountWei,
+        }));
+      }
       toast.success(t("contributeSuccess"));
       setContributeAmount("");
       refetchCampaign();
@@ -388,9 +444,45 @@ const c = campaign as {
                         required
                       />
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {t("amountInEth")}
+                        {isTokenCampaign ? "Amount in VOTE tokens" : t("amountInEth")}
                       </p>
                     </div>
+
+                    {isTokenCampaign && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-2.5 text-xs text-amber-800 dark:border-amber-800/30 dark:bg-amber-950/20 dark:text-amber-200">
+                        <p className="flex items-center gap-1.5">
+                          <AlertCircle className="h-3 w-3 shrink-0" />
+                          This campaign uses VOTE tokens. You need to approve the contract to spend your tokens first.
+                        </p>
+                        {tokenAllowance !== undefined && contributeAmount && (
+                          <p className="mt-1">
+                            Allowance: {formatEther(tokenAllowance)} VOTE
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {needsApproval && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/30"
+                        onClick={handleApprove}
+                        disabled={isApproving || isApproveTxPending}
+                      >
+                        {isApproving || isApproveTxPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Approving...
+                          </>
+                        ) : (
+                          <>
+                            <Wallet className="h-4 w-4" />
+                            Approve VOTE Tokens
+                          </>
+                        )}
+                      </Button>
+                    )}
 
                     {actionError && (
                       <div className="flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
@@ -402,7 +494,7 @@ const c = campaign as {
                     <Button
                       type="submit"
                       className="w-full gap-2"
-                      disabled={isContributing}
+                      disabled={isContributing || needsApproval}
                     >
                       {isContributing ? (
                         <>
@@ -412,7 +504,7 @@ const c = campaign as {
                       ) : (
                         <>
                           <Send className="h-4 w-4" />
-                          {t("confirmContribute")}
+                          {needsApproval ? "Approve tokens first" : t("confirmContribute")}
                         </>
                       )}
                     </Button>

@@ -4,18 +4,20 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useAccount, useChainId } from "wagmi";
-import { parseEther } from "viem";
+import { parseEther, zeroAddress } from "viem";
 import { CONTRACT_ADDRESSES, CROWDFUNDING_ABI } from "@/config/contracts";
 import { useCreateCampaign } from "@/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, AlertCircle, Wallet, Plus } from "lucide-react";
+import { Loader2, AlertCircle, Wallet, Plus, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const SEPOLIA_CHAIN_ID = 11155111;
+
+type Currency = "ETH" | "VOTE";
 
 export default function CreateCampaignPage() {
   const t = useTranslations("campaigns");
@@ -26,12 +28,16 @@ export default function CreateCampaignPage() {
   const { writeContractAsync, isPending } = useCreateCampaign();
 
   const [name, setName] = useState("");
-  const [token] = useState(CONTRACT_ADDRESSES.daoTokens);
+  const [currency, setCurrency] = useState<Currency>("ETH");
   const [target, setTarget] = useState("");
   const [duration, setDuration] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const isWrongNetwork = chainId !== SEPOLIA_CHAIN_ID;
+
+  const tokenAddress = currency === "ETH"
+    ? zeroAddress
+    : CONTRACT_ADDRESSES.daoTokens;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +66,7 @@ export default function CreateCampaignPage() {
         functionName: "createCampaign",
         args: [
           name.trim(),
-          token as `0x${string}`,
+          tokenAddress,
           parseEther(target),
           BigInt(Math.floor(durationNum * 86400)),
         ],
@@ -127,9 +133,44 @@ export default function CreateCampaignPage() {
                  required
                />
              </div>
+
+             <div className="space-y-2">
+               <Label>Currency</Label>
+               <div className="flex gap-2">
+                 <button
+                   type="button"
+                   onClick={() => setCurrency("ETH")}
+                   className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                     currency === "ETH"
+                       ? "border-primary bg-primary/10 text-primary"
+                       : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
+                   }`}
+                 >
+                   <Coins className="h-4 w-4" />
+                   ETH
+                 </button>
+                 <button
+                   type="button"
+                   onClick={() => setCurrency("VOTE")}
+                   className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-all ${
+                     currency === "VOTE"
+                       ? "border-primary bg-primary/10 text-primary"
+                       : "border-border bg-card text-muted-foreground hover:border-muted-foreground/30"
+                   }`}
+                 >
+                   <Coins className="h-4 w-4" />
+                   VOTE
+                 </button>
+               </div>
+               {currency === "VOTE" && (
+                 <p className="text-xs text-amber-600 dark:text-amber-400">
+                   Note: You need VOTE tokens and must approve the contract to use them.
+                 </p>
+               )}
+             </div>
  
              <div className="space-y-2">
-               <Label htmlFor="target">{t("goal")}</Label>
+               <Label htmlFor="target">{t("goal")} ({currency})</Label>
                <Input
                  id="target"
                  type="number"
@@ -141,7 +182,7 @@ export default function CreateCampaignPage() {
                  required
                />
                <p className="text-xs text-muted-foreground">
-                 {t("form.targetDesc")}
+                 Target amount in {currency}
                </p>
              </div>
  

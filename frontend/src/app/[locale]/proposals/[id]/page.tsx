@@ -97,9 +97,10 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
       setProofState("ready");
 
       const pA: [bigint, bigint] = [BigInt(proof.pi_a[0]), BigInt(proof.pi_a[1])];
+      // snarkjs proof.pi_b is in (real, imag) order, but Verifier.sol expects (imag, real) for G2 points
       const pB: [[bigint, bigint], [bigint, bigint]] = [
-        [BigInt(proof.pi_b[0][0]), BigInt(proof.pi_b[0][1])],
-        [BigInt(proof.pi_b[1][0]), BigInt(proof.pi_b[1][1])],
+        [BigInt(proof.pi_b[0][1]), BigInt(proof.pi_b[0][0])],
+        [BigInt(proof.pi_b[1][1]), BigInt(proof.pi_b[1][0])],
       ];
       const pC: [bigint, bigint] = [BigInt(proof.pi_c[0]), BigInt(proof.pi_c[1])];
       const pubSignals = proofPublicSignals.map((s) => BigInt(s)) as unknown as [bigint, bigint, bigint];
@@ -111,7 +112,7 @@ export default function ProposalDetailPage({ params }: { params: Promise<{ id: s
          abi: ZKVOTING_ABI,
          functionName: "vote",
          args: [pA, pB, pC, pubSignals],
-         gas: 500000n,
+          gas: 2000000n,
        }));
 
       setProofState("done");
