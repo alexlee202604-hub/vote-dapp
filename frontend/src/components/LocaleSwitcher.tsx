@@ -3,7 +3,6 @@
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTransition } from "react";
-import { routing } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,11 +28,7 @@ export default function LocaleSwitcher() {
 
   const switchLocale = (nextLocale: string) => {
     startTransition(() => {
-      const newPath = pathname.replace(
-        `/${locale}`,
-        nextLocale === routing.defaultLocale ? "" : `/${nextLocale}`
-      );
-      router.replace(newPath);
+      router.replace(pathname, { locale: nextLocale });
     });
   };
 
